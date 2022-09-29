@@ -1,5 +1,25 @@
 const express = require("express");
 const User = require("../models/userModel");
+const ErrorHandler = require("../helpers/errorHandler");
+
+exports.updateUser = async (request, response) => {
+  try {
+    const { id } = request.query;
+    const findUser = await User.findByIdAndUpdate(id);
+    findUser.fullname = request.body.fullname;
+    findUser.email = request.body.email;
+    // await findUser.save();
+    await findUser.save();
+    return response.status(200).send({
+      status: true,
+      message: "Account has been updated successfully",
+      updatedUser: findUser,
+    });
+  } catch (err) {
+    const error = ErrorHandler.handleErrors(err);
+    response.status(404).json({ error });
+  }
+};
 
 exports.getUser = async (request, response) => {
   try {
@@ -34,12 +54,20 @@ exports.getUser = async (request, response) => {
 };
 
 exports.getAllUsers = async (request, response) => {
-  const findAllUsers = await User.find();
-  return response.status(200).send({
-    status: true,
-    message: "Users found",
-    AllUsers: findAllUsers,
-  });
+  try {
+    const findAllUsers = await User.find();
+    return response.status(200).send({
+      status: true,
+      message: "Users found",
+      AllUsers: findAllUsers,
+    });
+  } catch (err) {
+    console.log(err);
+    return response.status(404).send({
+      status: false,
+      message: "No users found",
+    });
+  }
 };
 
 exports.deleteUser = async (request, response) => {
